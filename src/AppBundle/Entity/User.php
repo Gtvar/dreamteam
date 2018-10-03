@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 
 /**
  * Class Task
@@ -11,10 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="user")
  * @ORM\Entity()
  */
-class User implements RestViewInterface
+class User implements RestViewInterface, JWTUserInterface
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -49,6 +50,29 @@ class User implements RestViewInterface
      * @ORM\Column(name="created_at", type="datetime", nullable=false)
      */
     protected $createdAt;
+
+    /**
+     * User constructor.
+     *
+     * @param string $username
+     * @param string $password
+     */
+    public function __construct($username, $password = null)
+    {
+        $this->username = $username;
+        $this->password = $password;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function createFromPayload($username, array $payload)
+    {
+        return new self(
+            $username,
+            isset($payload['password']) ? $payload['password'] : null
+        );
+    }
 
     /**
      * Get Id
@@ -196,6 +220,27 @@ class User implements RestViewInterface
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRoles()
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSalt()
+    {
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function eraseCredentials()
+    {
     }
 
     /**
